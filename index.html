@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TelegramTorch - Telegram Search Engine</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-black: #05070a;
+            --neon-cyan: #00f2ff;
+            --neon-blue: #0066ff;
+            --glass: rgba(255, 255, 255, 0.03);
+            --neon-glow: 0 0 15px rgba(0, 242, 255, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-black);
+            background-image: radial-gradient(circle at center, #0a111a 0%, #05070a 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        main {
+            flex: 1;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            padding: 20px 0;
+        }
+
+        /* SVG Logo Styling */
+        .logo-svg {
+            width: 100%;
+            max-width: 450px;
+            height: auto;
+            margin-bottom: 40px;
+            filter: drop-shadow(0 0 10px var(--neon-cyan));
+        }
+
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 55px;
+            fill: none;
+            stroke: var(--neon-cyan);
+            stroke-width: 1.5px;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            animation: drawText 3s ease forwards;
+        }
+
+        @keyframes drawText {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Search Container */
+        .search-wrapper {
+            width: 100%;
+            position: relative;
+            background: var(--glass);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 50px;
+            padding: 6px 10px 6px 25px;
+            box-shadow: var(--neon-glow), inset 0 0 10px rgba(0, 242, 255, 0.1);
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+        }
+
+        .search-wrapper:focus-within {
+            box-shadow: 0 0 30px var(--neon-cyan);
+            transform: translateY(-3px);
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 1.2rem;
+            padding: 12px 5px;
+            font-family: inherit;
+        }
+
+        .search-input::placeholder {
+            color: rgba(0, 242, 255, 0.3);
+            letter-spacing: 1px;
+        }
+
+        /* Telegram Icon Button */
+        .search-btn {
+            background: var(--neon-cyan);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        .search-btn:hover {
+            transform: scale(1.1) rotate(-10deg);
+            filter: brightness(1.2);
+        }
+
+        .search-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: #05070a;
+            margin-right: 3px; /* Optically centered for telegram icon */
+        }
+
+        /* Navigation Links */
+        .nav-links {
+            margin-top: 30px;
+        }
+
+        .nav-links a {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin: 0 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        /* Footer Styling */
+        footer {
+            width: 100%;
+            padding: 25px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(0, 242, 255, 0.1);
+            z-index: 5;
+        }
+
+        .footer-content {
+            font-size: 0.85rem;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .footer-content b a {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            text-shadow: 0 0 5px rgba(0, 242, 255, 0.3);
+        }
+
+        .footer-content span {
+            color: #444;
+            margin: 0 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .logo-text { font-size: 35px; }
+            .search-wrapper { padding-left: 15px; }
+            .search-input { font-size: 1rem; }
+            .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+
+    <svg viewBox="0 0 24 24" style="width: 145px; height: 145px; filter: drop-shadow(0 0 5px #00f2ff);">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.52-1.4.51-.46-.01-1.35-.26-2.01-.48-.81-.27-1.45-.41-1.39-.86.03-.24.3-.48.79-.74 3.08-1.34 5.15-2.23 6.19-2.66 2.95-1.23 3.56-1.44 3.96-1.44.09 0 .28.02.41.09.11.06.19.14.22.25.04.1.05.28.03.39z" fill="#00f2ff"/>
+</svg>
+        <style>
+    .logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+    }
+
+    .logo-svg {
+        width: 100%;
+        max-width: 350px; /* ছোট সাইজ */
+        height: auto;
+        overflow: visible;
+    }
+
+    .main-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 45px; /* ছোট ফন্ট */
+        font-weight: 800;
+        fill: none;
+        stroke: #00f2ff;
+        stroke-width: 1.5px;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        
+        /* আগের সেই ড্রয়িং অ্যানিমেশন */
+        stroke-dasharray: 600;
+        stroke-dashoffset: 600;
+        animation: drawLogo 3s ease forwards;
+        filter: drop-shadow(0 0 8px #00f2ff);
+    }
+
+    .sub-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 13px;
+        fill: #fff;
+        text-transform: uppercase;
+        letter-spacing: 8px;
+        font-weight: 500;
+        opacity: 0;
+        animation: fadeInSubtitle 1s ease forwards 2.5s;
+    }
+
+    /* ড্রয়িং অ্যানিমেশন কিফ্রেম */
+    @keyframes drawLogo {
+        to { 
+            stroke-dashoffset: 0; 
+            fill: rgba(0, 242, 255, 0.1); /* হালকা ভেতরটা ভরে যাবে */
+        }
+    }
+
+    @keyframes fadeInSubtitle {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 0.6; transform: translateY(0); }
+    }
+</style>
+
+<div class="logo-container">
+    <svg class="logo-svg" viewBox="0 0 500 110">
+        <text x="50%" y="50" text-anchor="middle" class="main-title">
+            TelegramTorch
+        </text>
+        
+        <text x="50%" y="95" text-anchor="middle" class="sub-title">
+            Telegram Search Engine
+        </text>
+    </svg>
+</div>
+
+
+        <div class="search-wrapper">
+            <input type="text" id="search-input" class="search-input" placeholder="সার্চ করুন..." autocomplete="off">
+            
+            <button id="search-button" class="search-btn" title="Search Telegram">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.52-1.4.51-.46-.01-1.35-.26-2.01-.48-.81-.27-1.45-.41-1.39-.86.03-.24.3-.48.79-.74 3.08-1.34 5.15-2.23 6.19-2.66 2.95-1.23 3.56-1.44 3.96-1.44.09 0 .28.02.41.09.11.06.19.14.22.25.04.1.05.28.03.39z"/>
+                </svg>
+            </button>
+        </div>
+    </main>
+
+    <footer>
+        <style>
+    .footer-content {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6); /* সাধারণ টেক্সট একটু ঝাপসা */
+        text-align: center;
+        letter-spacing: 1px;
+        line-height: 1.6;
+    }
+
+    /* নিয়ন লিংকের স্টাইল */
+    .footer-content a {
+        color: #00f2ff;
+        text-decoration: none;
+        font-weight: 700;
+        text-shadow: 0 0 8px rgba(0, 242, 255, 0.6), 0 0 15px rgba(0, 242, 255, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .footer-content a:hover {
+        color: #fff;
+        text-shadow: 0 0 12px #00f2ff, 0 0 25px #00f2ff;
+    }
+
+    /* ডট বা সেপারেটর নিয়ন */
+    .neon-bullet {
+        color: #00f2ff;
+        margin: 0 8px;
+        text-shadow: 0 0 5px #00f2ff;
+    }
+</style>
+
+<p class="footer-content">
+    <b><a href="./index.html">TelegramTorch</a></b> 
+    <span class="neon-bullet">&bull;</span> 
+    All Rights Reserved 
+    <br>
+    Developed by <a href="https://github.com/HumayunShariarHimu" target="_blank">Humayun Shariar Himu</a>
+</p>
+
+    </footer>
+
+    <script>
+        const cx = '07ecc3bdfe7034314'; 
+
+        function performSearch() {
+            const query = document.getElementById("search-input").value.trim();
+            if(query) {
+                window.location.href = `https://cse.google.com/cse?cx=${cx}&q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        document.getElementById("search-button").addEventListener("click", performSearch);
+        document.getElementById("search-input").addEventListener("keydown", (e) => {
+            if(e.key === "Enter") performSearch();
+        });
+    </script>
+</body>
+</html>
